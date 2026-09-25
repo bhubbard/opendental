@@ -8,6 +8,8 @@ import { providerRoutes } from "./routes/providers.js";
 import { documentRoutes } from "./routes/documents.js";
 import { recallRoutes } from "./routes/recalls.js";
 import { queryRoutes } from "./routes/queries.js";
+import { perioRoutes } from "./routes/perio.js";
+import { fhirRoutes } from "./routes/fhir.js";
 import { handleQueueBatch } from "./queue/consumer.js";
 
 // Export Durable Objects for Cloudflare runtime binding
@@ -83,6 +85,10 @@ app.route("/api/v1/providers", providerRoutes);
 app.route("/api/v1/documents", documentRoutes);
 app.route("/api/v1/recalls", recallRoutes);
 app.route("/api/v1/queries", queryRoutes);
+app.route("/api/v1/perio", perioRoutes);
+
+// Mount ONC / FHIR R4 routes
+app.route("/fhir/r4", fhirRoutes);
 
 // Fallback to static web assets (Cloudflare Assets / Pages)
 app.all("*", async (c) => {
