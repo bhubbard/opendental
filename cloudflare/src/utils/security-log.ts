@@ -1,5 +1,3 @@
-import type { Env } from "../types.js";
-
 export enum PermType {
   AppointmentCreate = 1,
   AppointmentEdit = 2,
@@ -7,7 +5,13 @@ export enum PermType {
   PatientCreate = 4,
   PatientEdit = 5,
   ProcComplete = 6,
-  SecurityAdmin = 7
+  SecurityAdmin = 7,
+  PaymentCreate = 8,
+  InsPayCreate = 9,
+  RxCreate = 10,
+  RadiographCapture = 11,
+  SheetEdit = 12,
+  HL7Audit = 13
 }
 
 /**
@@ -17,7 +21,7 @@ export enum PermType {
  */
 export async function logSecurityEvent(
   db: D1Database,
-  permType: PermType,
+  permType: number,
   patNum: number,
   logText: string,
   userNum: number = 1,
@@ -56,4 +60,26 @@ export async function logSecurityEvent(
   `).bind(secLogNum, hashBase64).run();
 
   return secLogNum;
+}
+
+export interface SecurityLogParams {
+  PermType: number;
+  UserNum?: number;
+  PatNum?: number;
+  FKey?: number;
+  LogText: string;
+}
+
+export async function recordSecurityLog(
+  db: D1Database,
+  params: SecurityLogParams
+): Promise<number> {
+  return logSecurityEvent(
+    db,
+    params.PermType,
+    params.PatNum || 0,
+    params.LogText,
+    params.UserNum || 1,
+    params.FKey || 0
+  );
 }

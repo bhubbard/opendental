@@ -21,6 +21,10 @@
       <li class="nav-item active"><button data-tab="tab-schedule">📅 Appointments</button></li>
       <li class="nav-item"><button data-tab="tab-patients">👤 Patients</button></li>
       <li class="nav-item"><button data-tab="tab-chart">🦷 Tooth Chart</button></li>
+      <li class="nav-item"><button data-tab="tab-imaging">🖼️ Radiographs / DICOM</button></li>
+      <li class="nav-item"><button data-tab="tab-payments">💳 Payments &amp; Ledger</button></li>
+      <li class="nav-item"><button data-tab="tab-erx">💊 eRx / EPCS</button></li>
+      <li class="nav-item"><button data-tab="tab-forms">📝 eClipboard Intake</button></li>
       <li class="nav-item"><button data-tab="tab-ledger">📋 Treatment Plan</button></li>
       <li class="nav-item"><button data-tab="tab-docs">📂 Documents (R2)</button></li>
       <li class="nav-item"><button data-tab="tab-api">🔌 API Sandbox</button></li>
@@ -59,91 +63,290 @@
     <main class="content-body">
       <!-- 1. Operatory Schedule Pane -->
       <section class="tab-pane active" id="tab-schedule">
-        <div class="operatory-grid" id="operatory-grid">
-          <!-- Dynamically populated operatory columns -->
+        <div class="operatory-grid" id="operatory-calendar">
+          <!-- Operatories dynamically rendered via WebSocket + API -->
         </div>
       </section>
 
-      <!-- 2. Patients Pane -->
+      <!-- 2. Patients List Pane -->
       <section class="tab-pane" id="tab-patients">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <h2 style="font-size: 1.25rem;">Patient Records</h2>
-          <button class="btn-primary" id="btn-new-patient">+ Add Patient</button>
+          <button class="btn-primary" id="btn-add-patient">+ Add Patient</button>
         </div>
         <table class="data-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>PatNum</th>
               <th>Name</th>
               <th>Birthdate</th>
               <th>Phone</th>
-              <th>City / State</th>
-              <th>Action</th>
+              <th>Provider</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
-          <tbody id="patients-table-body">
+          <tbody id="patient-table-body">
             <!-- Dynamically populated -->
           </tbody>
         </table>
       </section>
 
-      <!-- 3. Interactive Tooth Chart Pane -->
+      <!-- 3. Graphical Tooth Chart Pane -->
       <section class="tab-pane" id="tab-chart">
+        <div class="chart-header">
+          <div class="patient-banner">
+            <h3 id="chart-patient-name">Jane Doe</h3>
+            <span class="badge" id="chart-patient-id">PatNum: 1</span>
+          </div>
+          <div class="chart-actions">
+            <button class="btn-secondary" id="btn-mark-missing">Mark Missing</button>
+            <button class="btn-secondary" id="btn-add-filling">Add Composite (MOD)</button>
+            <button class="btn-secondary" id="btn-add-crown">Add Crown (D2740)</button>
+            <button class="btn-primary" id="btn-save-chart">Save Restorations</button>
+          </div>
+        </div>
+
         <div class="tooth-chart-container">
-          <div class="chart-title-bar">
-            <div>
-              <h2 style="font-size: 1.25rem;">Interactive 32-Tooth Dental Chart</h2>
-              <p style="font-size: 0.85rem; color: #64748b;">Synchronized via Cloudflare Durable Objects</p>
-            </div>
-            <div>
-              <span id="selected-tooth-label" style="font-weight: 700; font-family: monospace; color: var(--primary);">Select a Tooth</span>
-            </div>
+          <div class="chart-arch-label">MAXILLARY ARCH (Upper Teeth 1 - 16)</div>
+          <div class="tooth-grid maxilla" id="maxillary-teeth">
+            <!-- Teeth 1-16 generated via JS -->
           </div>
 
-          <!-- Upper Arch (Teeth 1 - 16) -->
-          <div class="arch-row">
-            <div class="arch-label">Upper Maxillary Arch (Teeth 1 - 16)</div>
-            <div class="teeth-flex" id="upper-arch-teeth"></div>
-          </div>
-
-          <!-- Lower Arch (Teeth 32 - 17) -->
-          <div class="arch-row">
-            <div class="arch-label">Lower Mandibular Arch (Teeth 32 - 17)</div>
-            <div class="teeth-flex" id="lower-arch-teeth"></div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
-            <button class="btn-icon" onclick="setToothStatus('healthy')">Set Healthy</button>
-            <button class="btn-icon" style="color: #ef4444;" onclick="setToothStatus('decay')">Mark Decay / Caries</button>
-            <button class="btn-icon" style="color: #22c55e;" onclick="setToothStatus('restored')">Mark Restored (Composite)</button>
-            <button class="btn-icon" style="color: #eab308;" onclick="setToothStatus('crown')">Mark Crown</button>
-            <button class="btn-icon" style="color: #94a3b8;" onclick="setToothStatus('missing')">Mark Missing / Extracted</button>
+          <div class="chart-arch-label" style="margin-top: 24px;">MANDIBULAR ARCH (Lower Teeth 17 - 32)</div>
+          <div class="tooth-grid mandibula" id="mandibular-teeth">
+            <!-- Teeth 17-32 generated via JS -->
           </div>
         </div>
       </section>
 
-      <!-- 4. Treatment Plan & Ledger Pane -->
-      <section class="tab-pane" id="tab-ledger">
+      <!-- 4. Radiographs / DICOM Viewer & Sensor Bridge Pane -->
+      <section class="tab-pane" id="tab-imaging">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <div>
-            <h2 style="font-size: 1.25rem;">Treatment Plan &amp; Procedure Log</h2>
-            <p style="font-size: 0.85rem; color: #64748b;">Active Patient Procedures &amp; Fee Ledger</p>
+            <h2 style="font-size: 1.25rem;">Radiographs &amp; DICOM Viewer</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Hardware sensor bridge, 16-bit to 8-bit windowing, and FMX series mounts</p>
           </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" id="btn-bridge-dexis">🚀 Launch DEXIS</button>
+            <button class="btn-secondary" id="btn-bridge-schick">🚀 Launch Schick</button>
+            <button class="btn-primary" id="btn-sensor-acquire">⚡ Capture Sensor (TWAIN/USB)</button>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 320px 1fr; gap: 20px;">
+          <!-- Controls Panel -->
+          <div style="background: #fff; padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <h3 style="font-size: 1rem; margin-bottom: 12px;">Window / Level Adjustments</h3>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label>Window Center (Brightness): <span id="val-window-center">2048</span></label>
+              <input type="range" id="slider-window-center" min="500" max="3500" value="2048" style="width: 100%;">
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label>Window Width (Contrast): <span id="val-window-width">4096</span></label>
+              <input type="range" id="slider-window-width" min="500" max="6000" value="4096" style="width: 100%;">
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="chk-invert-contrast"> Invert Bone / Enamel Contrast
+              </label>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;">
+
+            <h3 style="font-size: 1rem; margin-bottom: 12px;">Study Metadata</h3>
+            <div id="dicom-metadata-box" style="font-size: 0.85rem; color: #475569; line-height: 1.6;">
+              <div><strong>Modality:</strong> Intraoral Radiography (IO)</div>
+              <div><strong>Exposure:</strong> 65 kVp, 7 mA, 120 ms</div>
+              <div><strong>Bit Depth:</strong> 16-bit allocated / 12-bit stored</div>
+              <div><strong>Storage:</strong> Cloudflare R2 (Zero Egress)</div>
+            </div>
+          </div>
+
+          <!-- Canvas Viewer Panel -->
+          <div style="background: #000; border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 480px; position: relative; border: 1px solid #334155;">
+            <canvas id="dicom-canvas" width="512" height="512" style="max-width: 100%; height: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"></canvas>
+            <div style="position: absolute; bottom: 12px; left: 16px; color: #38bdf8; font-family: monospace; font-size: 0.75rem;">
+              Tooth #19 Bitewing | R2 Key: radiographs/pat_1/xray.dcm
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Payment Processing & Ledger Pane -->
+      <section class="tab-pane" id="tab-payments">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <div>
-            <span style="font-size: 0.9rem; color: #64748b;">Total Est. Balance: </span>
-            <strong id="tp-total-amount" style="font-size: 1.2rem; color: var(--primary); font-family: monospace;">$0.00</strong>
+            <h2 style="font-size: 1.25rem;">Patient Ledger &amp; Terminal Processing</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">EMV card-present payments with automated PaySplit procedure allocations</p>
+          </div>
+          <button class="btn-primary" id="btn-open-charge-modal">💳 Charge Terminal / Card</button>
+        </div>
+
+        <!-- Ledger Financial Summary Cards -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
+          <div style="background: #fff; padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <div style="font-size: 0.8rem; color: #64748b;">Total Billed</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;" id="ledger-total-billed">$1,350.00</div>
+          </div>
+          <div style="background: #fff; padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <div style="font-size: 0.8rem; color: #64748b;">Insurance Paid</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #0284c7;" id="ledger-ins-paid">$650.00</div>
+          </div>
+          <div style="background: #fff; padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <div style="font-size: 0.8rem; color: #64748b;">Patient Paid</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #16a34a;" id="ledger-pat-paid">$450.00</div>
+          </div>
+          <div style="background: #fff; padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <div style="font-size: 0.8rem; color: #64748b;">Balance Due</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #dc2626;" id="ledger-balance-due">$250.00</div>
           </div>
         </div>
 
         <table class="data-table">
           <thead>
             <tr>
-              <th>CDT Code</th>
-              <th>Description</th>
+              <th>Date</th>
+              <th>Description / Code</th>
+              <th>Amount</th>
+              <th>Insurance Paid</th>
+              <th>Patient Split</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 6. Electronic Prescriptions (eRx / EPCS) Pane -->
+      <section class="tab-pane" id="tab-erx">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.25rem;">Electronic Prescriptions (eRx &amp; EPCS)</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">DEA Controlled Substances Dual-Auth (DEA § 1311.115) &amp; DoseSpot SSO</p>
+          </div>
+          <button class="btn-primary" id="btn-launch-dosespot">🚀 Open DoseSpot Portal (SSO)</button>
+        </div>
+
+        <div style="background: #fff; padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px;">
+          <h3 style="font-size: 1rem; margin-bottom: 12px;">Issue Electronic Prescription</h3>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px;">
+            <div class="form-group">
+              <label>Drug Name &amp; Strength:</label>
+              <input type="text" id="erx-drug-input" placeholder="e.g. Amoxicillin 500mg capsules" value="Amoxicillin 500mg">
+            </div>
+            <div class="form-group">
+              <label>Sig (Instructions):</label>
+              <input type="text" id="erx-sig-input" placeholder="Take 1 capsule PO TID for 7 days" value="Take 1 capsule every 8 hours">
+            </div>
+            <div class="form-group">
+              <label>Dispense Quantity &amp; Refills:</label>
+              <input type="text" id="erx-disp-input" placeholder="21 (twenty-one)" value="21 (twenty-one)">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: flex-end;">
+            <div class="form-group">
+              <label>DEA Controlled Substance Schedule:</label>
+              <select id="erx-dea-schedule" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                <option value="None">None (Standard Antibiotic / Non-Controlled)</option>
+                <option value="Schedule II">Schedule II (Hydrocodone, Oxycodone)</option>
+                <option value="Schedule III">Schedule III (Codeine combos)</option>
+                <option value="Schedule IV">Schedule IV (Tramadol, Diazepam)</option>
+              </select>
+            </div>
+            <div class="form-group" id="epcs-auth-group" style="display: none;">
+              <label style="color: #dc2626;">🔐 EPCS 2FA Token / Biometric OTP:</label>
+              <input type="password" id="erx-epcs-token" placeholder="Enter 6-digit EPCS OTP token">
+            </div>
+            <div>
+              <button class="btn-primary" id="btn-submit-rx" style="width: 100%;">Transmit eRx</button>
+            </div>
+          </div>
+          <div id="rx-alert-banner" style="display: none; margin-top: 12px; padding: 12px; background: #fef2f2; border: 1px solid #f87171; border-radius: 4px; color: #991b1b; font-size: 0.85rem;"></div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>RxDate</th>
+              <th>Drug</th>
+              <th>Sig</th>
+              <th>Disp</th>
+              <th>Provider</th>
+              <th>DEA Status</th>
+            </tr>
+          </thead>
+          <tbody id="rx-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 7. eClipboard & Dynamic Intake Forms Pane -->
+      <section class="tab-pane" id="tab-forms">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.25rem;">eClipboard Digital Patient Intake</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Medical history questionnaires, consent sheets, and digital signatures</p>
+          </div>
+        </div>
+
+        <div style="background: #fff; padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border); max-width: 720px;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 16px;">Medical History &amp; Dental Consent Form</h3>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label>Emergency Contact Name &amp; Phone:</label>
+            <input type="text" id="form-emergency" placeholder="John Doe - (415) 555-0199" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+              <input type="checkbox" id="chk-penicillin"> Penicillin Allergy
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+              <input type="checkbox" id="chk-latex"> Latex Allergy
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+              <input type="checkbox" id="chk-heart"> Heart Condition / High Blood Pressure
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+              <input type="checkbox" id="chk-consent" checked> General Dental Treatment Consent
+            </label>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Digital Patient Signature (Canvas / Touch Pad):</label>
+            <div style="border: 2px dashed var(--border); border-radius: 6px; padding: 10px; background: #f8fafc; text-align: center;">
+              <canvas id="signature-canvas" width="450" height="100" style="background: #fff; border: 1px solid #cbd5e1; border-radius: 4px;"></canvas>
+              <div style="margin-top: 6px; font-size: 0.75rem; color: #64748b;">Sign with mouse or stylus above</div>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="btn-submit-sheet">Submit eClipboard Form</button>
+        </div>
+      </section>
+
+      <!-- 8. Treatment Plan Pane -->
+      <section class="tab-pane" id="tab-ledger">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.25rem;">Active Treatment Plan</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Prioritized proposed procedures and insurance estimates</p>
+          </div>
+          <button class="btn-primary" id="btn-create-claim">Generate EDI 837D Dental Claim</button>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Priority</th>
               <th>Tooth</th>
-              <th>Surface</th>
+              <th>Code</th>
+              <th>Description</th>
               <th>Fee</th>
+              <th>Pri Ins Est</th>
+              <th>Patient Portion</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -153,7 +356,7 @@
         </table>
       </section>
 
-      <!-- 5. Documents Pane (Cloudflare R2) -->
+      <!-- 9. Documents Pane (Cloudflare R2) -->
       <section class="tab-pane" id="tab-docs">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <div>
@@ -178,7 +381,7 @@
         </div>
       </section>
 
-      <!-- 6. Open Dental API Sandbox Pane -->
+      <!-- 10. Open Dental API Sandbox Pane -->
       <section class="tab-pane" id="tab-api">
         <div style="max-width: 800px;">
           <h2 style="font-size: 1.25rem; margin-bottom: 8px;">Open Dental REST API &amp; ShortQuery Console</h2>

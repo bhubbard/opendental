@@ -10,6 +10,13 @@ import { recallRoutes } from "./routes/recalls.js";
 import { queryRoutes } from "./routes/queries.js";
 import { perioRoutes } from "./routes/perio.js";
 import { fhirRoutes } from "./routes/fhir.js";
+import { imagingRoutes } from "./routes/imaging.js";
+import { paymentRoutes } from "./routes/payments.js";
+import { erxRoutes } from "./routes/erx.js";
+import { claimRoutes } from "./routes/claims.js";
+import { sheetRoutes } from "./routes/sheets.js";
+import { webschedRoutes } from "./routes/websched.js";
+import { hl7Routes } from "./routes/hl7.js";
 import { handleQueueBatch } from "./queue/consumer.js";
 
 // Export Durable Objects for Cloudflare runtime binding
@@ -86,6 +93,13 @@ app.route("/api/v1/documents", documentRoutes);
 app.route("/api/v1/recalls", recallRoutes);
 app.route("/api/v1/queries", queryRoutes);
 app.route("/api/v1/perio", perioRoutes);
+app.route("/api/v1/imaging", imagingRoutes);
+app.route("/api/v1/payments", paymentRoutes);
+app.route("/api/v1/erx", erxRoutes);
+app.route("/api/v1/claims", claimRoutes);
+app.route("/api/v1/sheets", sheetRoutes);
+app.route("/api/v1/websched", webschedRoutes);
+app.route("/api/v1/hl7", hl7Routes);
 
 // Mount ONC / FHIR R4 routes
 app.route("/fhir/r4", fhirRoutes);
