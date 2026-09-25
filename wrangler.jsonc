@@ -1,0 +1,72 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "opendental-cf",
+  "account_id": "1175740cdf81970b9d1522fe245099de",
+  "main": "cloudflare/src/worker.ts",
+  "compatibility_date": "2026-08-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "cloudflare/public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "html_handling": "auto-trailing-slash"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "opendental-db",
+      "database_id": "opendental-d1-local",
+      "migrations_dir": "cloudflare/migrations"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "APPOINTMENT_SCHEDULE_DO",
+        "class_name": "AppointmentScheduleDO"
+      },
+      {
+        "name": "TOOTH_CHART_DO",
+        "class_name": "ToothChartDO"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["AppointmentScheduleDO", "ToothChartDO"]
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "DOCUMENTS_BUCKET",
+      "bucket_name": "opendental-documents"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "OPENDENTAL_KV",
+      "id": "opendental-kv-local"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "OPENDENTAL_QUEUE",
+        "queue": "opendental-jobs"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "opendental-jobs",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5
+      }
+    ]
+  },
+  "vars": {
+    "ENVIRONMENT": "development",
+    "PRACTICE_NAME": "Open Dental Cloud",
+    "ENABLE_HYPERDRIVE": "false"
+  }
+}

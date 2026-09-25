@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Dental Cloud — Edge Practice Management System</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand-area">
+      <span class="brand-icon">🦷</span>
+      <div>
+        <div class="brand-title">Open Dental</div>
+        <div class="brand-sub">Cloudflare Edge</div>
+      </div>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item active"><button data-tab="tab-schedule">📅 Appointments</button></li>
+      <li class="nav-item"><button data-tab="tab-patients">👤 Patients</button></li>
+      <li class="nav-item"><button data-tab="tab-chart">🦷 Tooth Chart</button></li>
+      <li class="nav-item"><button data-tab="tab-ledger">📋 Treatment Plan</button></li>
+      <li class="nav-item"><button data-tab="tab-docs">📂 Documents (R2)</button></li>
+      <li class="nav-item"><button data-tab="tab-api">🔌 API Sandbox</button></li>
+    </ul>
+
+    <div class="edge-badge-box">
+      <div class="edge-badge">
+        <span class="pulse-dot"></span>
+        <span id="ws-status">Connecting to Edge DO...</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="main-wrapper">
+    <header class="top-bar">
+      <div class="top-left">
+        <div class="date-navigator">
+          <button class="btn-icon" id="btn-prev-day">◀</button>
+          <span class="current-date-label" id="current-date-display">Today</span>
+          <button class="btn-icon" id="btn-next-day">▶</button>
+          <button class="btn-icon" id="btn-today">Today</button>
+        </div>
+
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="patient-search-input" placeholder="Search patient by name or phone...">
+        </div>
+      </div>
+
+      <div class="top-right">
+        <button class="btn-primary" id="btn-new-appointment">+ New Appointment</button>
+      </div>
+    </header>
+
+    <main class="content-body">
+      <!-- 1. Operatory Schedule Pane -->
+      <section class="tab-pane active" id="tab-schedule">
+        <div class="operatory-grid" id="operatory-grid">
+          <!-- Dynamically populated operatory columns -->
+        </div>
+      </section>
+
+      <!-- 2. Patients Pane -->
+      <section class="tab-pane" id="tab-patients">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 style="font-size: 1.25rem;">Patient Records</h2>
+          <button class="btn-primary" id="btn-new-patient">+ Add Patient</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Birthdate</th>
+              <th>Phone</th>
+              <th>City / State</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="patients-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 3. Interactive Tooth Chart Pane -->
+      <section class="tab-pane" id="tab-chart">
+        <div class="tooth-chart-container">
+          <div class="chart-title-bar">
+            <div>
+              <h2 style="font-size: 1.25rem;">Interactive 32-Tooth Dental Chart</h2>
+              <p style="font-size: 0.85rem; color: #64748b;">Synchronized via Cloudflare Durable Objects</p>
+            </div>
+            <div>
+              <span id="selected-tooth-label" style="font-weight: 700; font-family: monospace; color: var(--primary);">Select a Tooth</span>
+            </div>
+          </div>
+
+          <!-- Upper Arch (Teeth 1 - 16) -->
+          <div class="arch-row">
+            <div class="arch-label">Upper Maxillary Arch (Teeth 1 - 16)</div>
+            <div class="teeth-flex" id="upper-arch-teeth"></div>
+          </div>
+
+          <!-- Lower Arch (Teeth 32 - 17) -->
+          <div class="arch-row">
+            <div class="arch-label">Lower Mandibular Arch (Teeth 32 - 17)</div>
+            <div class="teeth-flex" id="lower-arch-teeth"></div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+            <button class="btn-icon" onclick="setToothStatus('healthy')">Set Healthy</button>
+            <button class="btn-icon" style="color: #ef4444;" onclick="setToothStatus('decay')">Mark Decay / Caries</button>
+            <button class="btn-icon" style="color: #22c55e;" onclick="setToothStatus('restored')">Mark Restored (Composite)</button>
+            <button class="btn-icon" style="color: #eab308;" onclick="setToothStatus('crown')">Mark Crown</button>
+            <button class="btn-icon" style="color: #94a3b8;" onclick="setToothStatus('missing')">Mark Missing / Extracted</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Treatment Plan & Ledger Pane -->
+      <section class="tab-pane" id="tab-ledger">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.25rem;">Treatment Plan &amp; Procedure Log</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Active Patient Procedures &amp; Fee Ledger</p>
+          </div>
+          <div>
+            <span style="font-size: 0.9rem; color: #64748b;">Total Est. Balance: </span>
+            <strong id="tp-total-amount" style="font-size: 1.2rem; color: var(--primary); font-family: monospace;">$0.00</strong>
+          </div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>CDT Code</th>
+              <th>Description</th>
+              <th>Tooth</th>
+              <th>Surface</th>
+              <th>Fee</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tp-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 5. Documents Pane (Cloudflare R2) -->
+      <section class="tab-pane" id="tab-docs">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.25rem;">Digital Imaging &amp; Documents</h2>
+            <p style="font-size: 0.85rem; color: #64748b;">Stored natively in Cloudflare R2 Object Storage</p>
+          </div>
+        </div>
+
+        <div style="background: #fff; padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px;">
+          <form id="upload-form" enctype="multipart/form-data">
+            <input type="hidden" name="patNum" id="upload-patnum" value="1">
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <input type="file" name="file" required style="font-size: 0.85rem;">
+              <input type="text" name="description" placeholder="Document description (e.g. Bitewing X-Ray)..." style="flex-grow: 1; padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px;">
+              <button type="submit" class="btn-primary">Upload to R2</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="docs-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- 6. Open Dental API Sandbox Pane -->
+      <section class="tab-pane" id="tab-api">
+        <div style="max-width: 800px;">
+          <h2 style="font-size: 1.25rem; margin-bottom: 8px;">Open Dental REST API &amp; ShortQuery Console</h2>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">
+            Execute standard Open Dental queries against Cloudflare D1.
+          </p>
+
+          <div style="background: #fff; padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px;">
+            <div class="form-group">
+              <label for="sql-query-input">Open Dental SQL ShortQuery (SELECT only):</label>
+              <textarea id="sql-query-input" rows="4" style="font-family: monospace; font-size: 0.85rem;">SELECT p.PatNum, p.LName, p.FName, a.AptDateTime, a.Op 
+FROM patient p 
+JOIN appointment a ON p.PatNum = a.PatNum 
+LIMIT 5</textarea>
+            </div>
+            <button class="btn-primary" id="btn-run-query">Execute ShortQuery</button>
+          </div>
+
+          <div style="background: #0f172a; color: #38bdf8; padding: 16px; border-radius: var(--radius-md); font-family: monospace; font-size: 0.85rem; overflow-x: auto; min-height: 140px;">
+            <pre id="query-output">Results will appear here...</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
