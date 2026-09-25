@@ -1,9 +1,7 @@
-//! Open Dental in Rust (`opendental-rs`)
-//! High-performance Rust port of Open Dental Practice Management Software.
-
 pub mod engine;
 pub mod models;
 pub mod repository;
+pub mod server;
 
 pub use repository::PracticeRepository;
 
