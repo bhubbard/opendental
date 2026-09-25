@@ -8,6 +8,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "test": "vitest run",
+    "test:rust": "cargo test --manifest-path rust/Cargo.toml",
+    "test:all": "vitest run && cargo test --manifest-path rust/Cargo.toml",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "typecheck": "tsc --noEmit"

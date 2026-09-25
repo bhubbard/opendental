@@ -9,6 +9,7 @@ node_modules/
 dist/
 build/
 .cache/
+rust/target/
 
 # OS and Editor
 .DS_Store

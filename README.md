@@ -4,6 +4,7 @@
 
 [![CI](https://github.com/bhubbard/opendental/actions/workflows/ci.yml/badge.svg)](https://github.com/bhubbard/opendental/actions/workflows/ci.yml)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020.svg?logo=cloudflare)](https://workers.cloudflare.com)
+[![Rust](https://img.shields.io/badge/Rust-opendental--rs-orange.svg?logo=rust)](rust/)
 [![Cloudflare D1](https://img.shields.io/badge/Storage-D1%20SQLite-blue.svg)](https://developers.cloudflare.com/d1/)
 [![Cloudflare R2](https://img.shields.io/badge/Imaging-R2%20Bucket-orange.svg)](https://developers.cloudflare.com/r2/)
 [![Durable Objects](https://img.shields.io/badge/Sync-Durable%20Objects-purple.svg)](https://developers.cloudflare.com/durable-objects/)
@@ -127,6 +128,14 @@ bun run typecheck
 - **`payments.test.ts`**: Port of `Payment.cs` and `PaySplit.cs` automated procedure distribution, SHA-256 `SecurityHash`, and patient ledger balances
 - **`erx.test.ts`**: Port of `DoseSpot.cs` 32-character SHA-512 SSO hash generation, drug allergy checks, and DEA EPCS § 1311.115 dual-factor authentication
 - **`era835-sheets-websched-hl7.test.ts`**: Port of `X835.cs` remittance advice auto-posting, eClipboard sheets, WebSched booking, and HL7 v2 ADT/SIU messaging
+
+## Rust Implementation (`opendental-rs`) 🦀
+
+A memory-safe, ultra-high-performance native Rust implementation is located in [`rust/`](rust/):
+- **34 tests passing** (`cargo test`) covering all upstream calculation rules
+- Native CLI runner (`cargo run`)
+- Implements claims estimation, HIPAA SHA-256 base64 security hash chaining, DICOM windowing, payment auto-split allocation, DoseSpot eRx SSO, ANSI 837D / 835 EDI engines, HL7 v2 messaging, and periodontal pocket scoring
+- See [`rust/README.md`](rust/README.md) for full crate documentation and benchmarks.
 
 ---
 

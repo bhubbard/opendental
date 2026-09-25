@@ -1,4 +1,4 @@
-name: CI - Open Dental on Cloudflare
+name: CI - Open Dental (Cloudflare & Rust)
 
 on:
   push:
@@ -7,7 +7,8 @@ on:
     branches: ["main"]
 
 jobs:
-  test:
+  test-cloudflare:
+    name: Cloudflare Edge Worker Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -24,8 +25,26 @@ jobs:
       - name: Typecheck TypeScript
         run: bun run typecheck
 
-      - name: Run Vitest Suite
+      - name: Run Vitest Suite (48 tests)
         run: bun run test
 
       - name: Test D1 Migrations
         run: echo y | bunx wrangler d1 migrations apply DB --local
+
+  test-rust:
+    name: Rust opendental-rs Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run Cargo Test (34 tests)
+        working-directory: rust
+        run: cargo test --verbose
+
+      - name: Build Rust CLI Binary
+        working-directory: rust
+        run: cargo build --verbose
